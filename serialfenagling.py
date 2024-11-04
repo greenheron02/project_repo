@@ -1,21 +1,20 @@
-import serial  
-from pynput import keyboard 
+import serial 
+from pynput import keyboard
+from time import sleep
+ser = serial.Serial('/dev/ttyACM0')
+print(ser.name)
+print("hamburgers")
+counter = 1
+keycontrol = keyboard.Controller()
+while True: 
+    x = ser.readline()
+    x = x.decode("utf-8")
+    # print(x[:-2] == 'a')
+    x = x[:-2]
+    if (x == 'a'): 
+        keycontrol.press('a')
+    elif (x == 'b'):
+        keycontrol.press('b')
+    print(f"{counter}: {x[:-1]}")
+    counter = counter + 1
 
-portString = "COM5"
-with serial.Serial(portString) as ser:
-    x = ser.readline() 
-    x = x.replace('\b\r\t\n','')
-    if x.__len__() > 1: 
-        x.strip()
-    keycontrol = keyboard.Controller('/r/t/n')
-    inputlist = ['a','b','x','y']
-    if x == inputlist[0]: 
-        keycontrol.press(inputlist[0])
-    elif x == inputlist[1]: 
-        keycontrol.press(inputlist[1])
-    elif x == inputlist[2]: 
-        keycontrol.press(inputlist[2])
-    if x == inputlist[3]: 
-        keycontrol.press(inputlist[3])
-
-        
