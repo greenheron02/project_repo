@@ -11,6 +11,11 @@ Screen::Screen(QWidget *parent) :
     this->installEventFilter(this);
     this->setFocus();
     makeAHKFile();
+
+    localpath = QDir::currentPath();
+    localpath = localpath.split("build/")[0];
+    qDebug() << localpath;
+
     /*ahksock.connectToHost("192.168.1.147", 5003);
      if (!ahksock.waitForConnected(1000))
         qDebug() << "AHK CONNECTION FAILURE";*/
@@ -56,7 +61,7 @@ Screen::Screen(QWidget *parent) :
 
     QLabel* header = new QLabel;
     header->setFixedHeight(40);
-    header->setText("I am above all");
+    header->setText("Select a game");
     QFont fontt = header->font();
     if(editMode)
     {

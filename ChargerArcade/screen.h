@@ -95,10 +95,7 @@ private:
     int prevSpot=1;
     QTcpSocket ahksock;
     QMap<QString, QString> con;
-
-
-
-    QString localpath = "C:/Users/wesri/School/ChargerArcade/"; ////Set this to the path where the ChargerArcade folder is located, only needed for the AutoHotkey stuff
+    QString localpath;
     QString AHKpath = "NULL"; ////Set this to "NULL" if the computer does not have AutoHotKey installed
 
 };
