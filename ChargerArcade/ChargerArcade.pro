@@ -5,8 +5,8 @@
 #-------------------------------------------------
 
 QT       += core gui network
-LIBS += -LC:\Users\wesri\Downloads\SDL2-devel-2.30.10-mingw\SDL2-2.30.10\x86_64-w64-mingw32\lib -lSDL2
-INCLUDEPATH += C:\Users\wesri\Downloads\SDL2-devel-2.30.10-mingw\SDL2-2.30.10\x86_64-w64-mingw32\include
+#LIBS += -LC:\Users\wesri\Downloads\SDL2-devel-2.30.10-mingw\SDL2-2.30.10\x86_64-w64-mingw32\lib -lSDL2
+#INCLUDEPATH += C:\Users\wesri\Downloads\SDL2-devel-2.30.10-mingw\SDL2-2.30.10\x86_64-w64-mingw32\include
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = ChargerArcade
@@ -44,7 +44,8 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 RESOURCES += \
-    screen.qrc
+
+
 
 DISTFILES += \
     testfile.txt

@@ -10,14 +10,14 @@ Screen::Screen(QWidget *parent) :
 {
     this->installEventFilter(this);
     this->setFocus();
-    makeControlArray();
+    makeAHKFile();
     /*ahksock.connectToHost("192.168.1.147", 5003);
      if (!ahksock.waitForConnected(1000))
         qDebug() << "AHK CONNECTION FAILURE";*/
     //runGame();
     //insert();
 
-    /*   */  }
+    /*   *\  }
     void Screen::temp()
     {/**/
     screenw = monitor.geometry().width();
@@ -125,14 +125,15 @@ Screen::Screen(QWidget *parent) :
 
 void Screen::DrawFrame(QColor col, int id)
 {
+    qDebug() << "framing";
     QPixmap *image = images[id];
     QPainter border(image);
-    QPen pen(col);
-    pen.setWidth(borderThickness);
+    QPen pen;
+    pen.setWidth(100);
     border.setPen(pen);
     border.drawRect(1,1,gridwidth-2,gridheight-2);
     border.end();
-    //*image = image->scaled(gridwidth, gridheight, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+    *image = image->scaled(gridwidth, gridheight, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
     entries[id]->findChild<QLabel*>("logo")->setPixmap(*image);
     entries[id]->findChild<QLabel*>("logo")->update();
 }
@@ -293,7 +294,7 @@ bool Screen::eventFilter(QObject *obj, QEvent *event)
 
         if(key==Qt::Key_Q)
         {
-         MakeSelectScreen();
+            MakeSelectScreen();
         }
         if(key==Qt::Key_X)
         {
@@ -350,16 +351,16 @@ void Screen::UpdateSpot()
 
         // Capture variables in lambda to update scroll position incrementally
         QObject::connect(timer, &QTimer::timeout, [=]() mutable
-        {
-            i++;
-            Scroller.verticalScrollBar()->setValue(oldscrollval + (newscrollval - oldscrollval)/steps*i);
+                         {
+                             i++;
+                             Scroller.verticalScrollBar()->setValue(oldscrollval + (newscrollval - oldscrollval)/steps*i);
 
-            if (i >= steps)
-            {
-                timer->stop();
-                timer->deleteLater();
-            }
-         });
+                             if (i >= steps)
+                             {
+                                 timer->stop();
+                                 timer->deleteLater();
+                             }
+                         });
 
         timer->start(ms);
     }
@@ -458,7 +459,7 @@ void Screen::MakeSelectScreen()
                 QVBoxLayout *box = new QVBoxLayout;
                 QLabel *title = new QLabel, *credit = new QLabel;
 
-                QPixmap *image = new QPixmap(":/"+info[2]);
+                QPixmap *image = new QPixmap(":/" + info[2]);
                 QPixmap *Logo = new QPixmap(gridwidth, gridheight);
                 Logo->fill(QColor("#002D72"));
 
@@ -622,9 +623,9 @@ void Screen::MakeGameScreen()
 
     box->fill(QColor("red"));
 
-    *box = box->scaled(300, 300, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
     QLabel *boxx = new QLabel;
     boxx->setPixmap(*box);
+    *box = box->scaled(300, 300, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
 
     gamelayout->addWidget(boxx);
     gamelayout->addStretch();

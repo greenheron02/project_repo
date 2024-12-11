@@ -1,4 +1,4 @@
-#include <iostream>
+/*#include <iostream>
 #include "gamepad.h"
 
 int main() {
@@ -66,4 +66,4 @@ int main() {
     SDL_Quit();
 
     return 0;
-}
+}*/

@@ -44,7 +44,7 @@ void Screen::insert()
     QString pre = QString::number(id) + "||||";
 
     file.setFileName(":/ChargerArcadeData.txt");
-    QString tempFilePath = "C:/Users/wesri/School/ChargerArcade/ChargerArcade/ChargerArcade/ChargerArcadeDataTEMP.txt";
+    QString tempFilePath = localpath + "ChargerArcadeDataTEMP.txt";
     QFile tempFile(tempFilePath);
 
     file.open(QIODevice::ReadOnly | QIODevice::Text);
@@ -123,13 +123,13 @@ void Screen::runGame()
     qDebug() << "running";
     stack.setCurrentIndex(2);
     // QFile scriptFile("/home/student/wr0018/ChargerArcade/ChargerArcade/programs/CharmStudies.sh");
-    QFile scriptFile("C:/Users/wesri/School/ChargerArcade/ChargerArcade/ChargerArcade/CharmStudies.exe");
+    QFile scriptFile(localpath + "CharmStudies.exe");
     if (!scriptFile.exists()) {
         qDebug() << "File does not exist!";
     }
 
     //QString program = "/home/student/wr0018/ChargerArcade/ChargerArcade/programs/CharmStudies.sh";
-    QString program = "C:/Users/wesri/School/ChargerArcade/ChargerArcade/ChargerArcade/CharmStudies.exe";
+    QString program = localpath + "CharmStudies.exe";
     connect(process, &QProcess::errorOccurred, this, [=](QProcess::ProcessError error) {
         qDebug() << "Process error:" << error;
     });
@@ -149,10 +149,12 @@ void Screen::runGame()
     process->start(program);
 }
 
-void Screen::resizeWindowWithAHK(const QString &windowTitle, int width, int height)
+void Screen::resizeWindowWithAHK(const QString &windowTitle, int width, int height) //incomplete
 {
-    QString program = "C:/ProgramData/Microsoft/Windows/Start Menu/Programs/autohotkey.exe";
-    QString scriptPath = "C:/Users/wesri/School/ChargerArcade/ChargerArcade/ChargerArcade/ChargerArcade.ahk";
+    if(AHKpath != "NULL")
+    {
+    QString program = AHKpath;
+    QString scriptPath = localpath + "ChargerArcade.ahk";
 
     QStringList arguments;
     arguments << scriptPath
@@ -173,10 +175,13 @@ void Screen::resizeWindowWithAHK(const QString &windowTitle, int width, int heig
     });
 
     process->start(program, arguments);
+    }
 }
 
 void Screen::sendToAHK(const QString &key)
 {
+    if(AHKpath != "NULL")
+    {
     QString message = "A";
     QByteArray data = message.toUtf8();
     data.append('\0'); // Add null terminator
@@ -186,15 +191,18 @@ void Screen::sendToAHK(const QString &key)
     QStringList arguments;
     arguments << "C:/Users/wesri/Documents/AutoHotkey/ChargerArcadeControls.ahk" << key;
     QProcess::startDetached("AutoHotKey.exe", arguments);*/
+    }
 }
 
-void Screen::makeControlArray()
+void Screen::makeAHKFile()
 {
+    if(AHKpath != "NULL")
+    {
     QString data = "A=B,C=D"; //reformat later
     data = data.toLower();
     QStringList dataa=data.split(",");
 
-    QFile ahk("C:/Users/wesri/School/ChargerArcade/ChargerArcade/ahkfile.ahk");
+    QFile ahk(localpath + "ahkfile.ahk");
     QTextStream stream(&ahk);
     ahk.open(QIODevice::WriteOnly|QIODevice::Text);
     stream << "#Requires AutoHotkey v2.0\n#SingleInstance Force\nesc::ExitApp";
@@ -211,24 +219,31 @@ void Screen::makeControlArray()
     ahk.close();
 
 
-    QString ahkExecutable = "C:/Users/wesri/School/ChargerArcade/ChargerArcade/ahkfile.ahk";
+    QString ahkExecutable = localpath + "ahkfile.ahk";
 
     // Start the AHK script
-    bool success = QProcess::startDetached("C:/Program Files/AutoHotkey/v2/AutoHotkey.exe", QStringList() << "C:\\Users\\wesri\\School\\ChargerArcade\\ChargerArcade\\ahkfile.ahk");
+    QString localpathbackslash = localpath;
+    localpathbackslash.replace("/", "\\\\");
+    bool success = QProcess::startDetached(AHKpath, QStringList() << localpathbackslash+"ahkfile.ahk");
 
     if (success) {
         qDebug() << "AHK script executed successfully.";
     } else {
         qDebug() << "Failed to execute AHK script.";
     }
+    }
 }
 
 void Screen::endScript()
 {
-    QFile ahk("C:/Users/wesri/School/ChargerArcade/ChargerArcade/ahkfile.ahk");
+    if(AHKpath != "NULL")
+    {
+    QFile ahk(localpath + "ahkfile.ahk");
     QTextStream stream(&ahk);
     ahk.open(QIODevice::WriteOnly|QIODevice::Text);
      stream << "#SingleInstance Force\nExitApp";
     ahk.close();
-    QProcess::startDetached("C:/Program Files/AutoHotkey/v2/AutoHotkey.exe", QStringList() << "C:\\Users\\wesri\\School\\ChargerArcade\\ChargerArcade\\ahkfile.ahk");
+    QProcess::startDetached(AHKpath, QStringList() << "C:\\Users\\wesri\\School\\ChargerArcade\\ChargerArcade\\ahkfile.ahk");
+    }
 }
+
