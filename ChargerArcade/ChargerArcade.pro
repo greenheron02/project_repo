@@ -27,16 +27,18 @@ CONFIG += c++11
 
 SOURCES += \
         comm.cpp \
-        gamepad.cpp \
+#       gamepad.cpp \
         main.cpp \
         screen.cpp
 
 HEADERS += \
-        gamepad.h \
+#       gamepad.h \
         screen.h
 
 FORMS += \
         screen.ui
+
+DEFINES+=PROJECT_LOCATION="$$shell_path($$_PRO_FILE_PWD_)"
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
@@ -44,7 +46,7 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 RESOURCES += \
-
+screen.qrc
 
 
 DISTFILES += \

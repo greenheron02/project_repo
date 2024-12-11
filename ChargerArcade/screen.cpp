@@ -10,11 +10,11 @@ Screen::Screen(QWidget *parent) :
 {
     this->installEventFilter(this);
     this->setFocus();
-    makeAHKFile();
 
     localpath = QDir::currentPath();
     localpath = localpath.split("build/")[0];
     qDebug() << localpath;
+    makeAHKFile();
 
     /*ahksock.connectToHost("192.168.1.147", 5003);
      if (!ahksock.waitForConnected(1000))

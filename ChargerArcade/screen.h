@@ -96,7 +96,10 @@ private:
     QTcpSocket ahksock;
     QMap<QString, QString> con;
     QString localpath;
-    QString AHKpath = "NULL"; ////Set this to "NULL" if the computer does not have AutoHotKey installed
 
+
+
+
+    bool  AHKActive = true; ////Set this to false if the computer does not have AutoHotKey installed. This will disable the usability of the controls, but the computer's keyboard can be used instead.
 };
-#endif // SCREEN_H
+#endif
