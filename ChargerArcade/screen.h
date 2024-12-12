@@ -65,14 +65,14 @@ public:
     void runGame();
     void resizeWindowWithAHK(const QString &windowTitle, int width, int height);
     void sendToAHK(const QString &key);
-    void makeAHKFile();
+    void makeAHKFile(int programid);
     void endScript();
 
     protected:
     bool eventFilter(QObject *obj, QEvent *event)override;
 private:
     QGridLayout* grid = new QGridLayout;
-    QProcess *process = new QProcess(this);
+    QProcess *game = new QProcess(this);
     QScrollArea Scroller;
     QWidget selectscreen, startscreen, screen, gamescreen, managescreen, ScrollArea;
     QVBoxLayout startLayout;
@@ -96,7 +96,7 @@ private:
     QTcpSocket ahksock;
     QMap<QString, QString> con;
     QString localpath;
-
+    QLabel* header;
 
 
 

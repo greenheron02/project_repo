@@ -20,7 +20,7 @@ void Screen::extract(int num)
     }
 
     //QFile outfile("C:/Users/wesri/School/ChargerArcade/ChargerArcade/TestUsbContents.txt");
-    QFile TEMPOut("D:/data.txt");
+    QFile TEMPOut("C:/data.txt");
     TEMPOut.open(QIODevice::WriteOnly | QIODevice::Text);
     QTextStream USB_out(&TEMPOut);
     USB_out << Line;
@@ -31,7 +31,7 @@ void Screen::extract(int num)
 
 void Screen::insert()
 {
-    QFile file("D:/data.txt");
+    QFile file("C:/data.txt");
     QTextStream in(&file);
     file.open(QIODevice::ReadOnly | QIODevice::Text);
     QString USBData = in.readLine();
@@ -44,7 +44,7 @@ void Screen::insert()
     QString pre = QString::number(id) + "||||";
 
     file.setFileName(":/ChargerArcadeData.txt");
-    QString tempFilePath = localpath + "ChargerArcadeDataTEMP.txt";
+    QString tempFilePath = ":/ChargerArcadeDataTEMP.txt";
     QFile tempFile(tempFilePath);
 
     file.open(QIODevice::ReadOnly | QIODevice::Text);
@@ -103,15 +103,19 @@ void Screen::insert()
 
 void Screen::CheckForUSB()
 {
-    QFile file("D:/key.txt");
+    QFile file("C:/key.txt");
     QTextStream stream(&file);
     if(file.open(QIODevice::ReadOnly|QIODevice::Text))
     {
         QString line=stream.readLine();
         //qDebug() << line;
         if(line == keyPhrase)
+        {
             editMode=true;
+            qDebug() << "ROOT USER";
+        }
     }
+
 }
 
 
@@ -120,23 +124,24 @@ void Screen::CheckForUSB()
 
 void Screen::runGame()
 {
-    qDebug() << "running";
+
     stack.setCurrentIndex(2);
-    // QFile scriptFile("/home/student/wr0018/ChargerArcade/ChargerArcade/programs/CharmStudies.sh");
-    QFile scriptFile(localpath + "CharmStudies.exe");
-    if (!scriptFile.exists()) {
+    // QFile gameFile("/home/student/wr0018/ChargerArcade/ChargerArcade/programs/CharmStudies.sh");
+    QFile gameFile(localpath + programs[spot]);
+     qDebug() << "running" << programs[spot];
+    if (!gameFile.exists()) {
         qDebug() << "File does not exist!";
     }
 
     //QString program = "/home/student/wr0018/ChargerArcade/ChargerArcade/programs/CharmStudies.sh";
-    QString program = localpath + "CharmStudies.exe";
-    connect(process, &QProcess::errorOccurred, this, [=](QProcess::ProcessError error) {
+    QString program = localpath + programs[spot];
+    connect(game, &QProcess::errorOccurred, this, [=](QProcess::ProcessError error) {
         qDebug() << "Process error:" << error;
     });
-    connect(process, &QProcess::started, this, [=](){
+    connect(game, &QProcess::started, this, [=](){
         qDebug() << "started successully";
     });
-    connect(process, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), this, [=](int exitCode, QProcess::ExitStatus exitStatus) {
+    connect(game, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), this, [=](int exitCode, QProcess::ExitStatus exitStatus) {
         if (exitStatus == QProcess::NormalExit) {
             qDebug() << "Process ended successfully with exit code:" << exitCode;
         } else {
@@ -146,15 +151,16 @@ void Screen::runGame()
 
     QStringList arguments;
     arguments << "--window-width" << "1000" << "--window-height" << "1000"; // Example window size arguments
-    process->start(program);
+    game->start(program);
+    makeAHKFile(spot+1);
 }
 
 void Screen::resizeWindowWithAHK(const QString &windowTitle, int width, int height) //incomplete
 {
-    if(AHKpath != "NULL")
+    if(AHKActive)
     {
-    QString program = AHKpath;
-    QString scriptPath = localpath + "ChargerArcade.ahk";
+    QString program = localpath + "AutoHotkey.exe";
+    QString scriptPath = ":/ChargerArcade.ahk";
 
     QStringList arguments;
     arguments << scriptPath
@@ -180,7 +186,7 @@ void Screen::resizeWindowWithAHK(const QString &windowTitle, int width, int heig
 
 void Screen::sendToAHK(const QString &key)
 {
-    if(AHKpath != "NULL")
+    if(AHKActive)
     {
     QString message = "A";
     QByteArray data = message.toUtf8();
@@ -194,15 +200,17 @@ void Screen::sendToAHK(const QString &key)
     }
 }
 
-void Screen::makeAHKFile()
+void Screen::makeAHKFile(int programid)
 {
-    if(AHKpath != "NULL")
+    if(AHKActive)
     {
-    QString data = "A=B,C=D"; //reformat later
-    data = data.toLower();
+        QStringList datas = {"Up=w,Down=s,Left=a,Right=d,w=Enter,a=e","Up=Up","Left=Up,w=Space,a=d"}; //reformat later
+        QString data = datas[programid];
+        qDebug() << "setting controls to " << data;
+    //data = data.toLower();
     QStringList dataa=data.split(",");
 
-    QFile ahk(localpath + "ahkfile.ahk");
+    QFile ahk(localpath +"ahkfile.ahk");
     QTextStream stream(&ahk);
     ahk.open(QIODevice::WriteOnly|QIODevice::Text);
     stream << "#Requires AutoHotkey v2.0\n#SingleInstance Force\nesc::ExitApp";
@@ -218,32 +226,34 @@ void Screen::makeAHKFile()
     }
     ahk.close();
 
-
-    QString ahkExecutable = localpath + "ahkfile.ahk";
-
     // Start the AHK script
     QString localpathbackslash = localpath;
     localpathbackslash.replace("/", "\\\\");
-    bool success = QProcess::startDetached(AHKpath, QStringList() << localpathbackslash+"ahkfile.ahk");
+    bool success = QProcess::startDetached(localpath+"AutoHotkey.exe", QStringList() << localpathbackslash+"ahkfile.ahk");
 
-    if (success) {
+    if (success)
         qDebug() << "AHK script executed successfully.";
-    } else {
+
+    else
+    {
         qDebug() << "Failed to execute AHK script.";
+        AHKActive=false;
     }
     }
 }
 
 void Screen::endScript()
 {
-    if(AHKpath != "NULL")
+    if(AHKActive)
     {
     QFile ahk(localpath + "ahkfile.ahk");
     QTextStream stream(&ahk);
     ahk.open(QIODevice::WriteOnly|QIODevice::Text);
      stream << "#SingleInstance Force\nExitApp";
     ahk.close();
-    QProcess::startDetached(AHKpath, QStringList() << "C:\\Users\\wesri\\School\\ChargerArcade\\ChargerArcade\\ahkfile.ahk");
+    QString localpathbackslash = localpath;
+    localpathbackslash.replace("/", "\\\\");
+    QProcess::startDetached(localpath+"AutoHotkey.exe", QStringList() << localpathbackslash+"ahkfile.ahk");
     }
 }
 

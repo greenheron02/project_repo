@@ -1,0 +1,16 @@
+<RCC>
+    <qresource prefix="/">
+        <file>Squid Jump short.jpg</file>
+        <file>Squid Jump.jpg</file>
+        <file>Fix-It-Felix.png</file>
+        <file>SMB_Title.png</file>
+        <file>UAH.png</file>
+        <file>ChargerArcadeData.txt</file>
+        <file>CharmStudies.exe</file>
+        <file>Delfino.ttf</file>
+        <file>RedHatText.ttf</file>
+        <file>RedHatText-VariableFont_wght.ttf</file>
+        <file>ahkfile.ahk</file>
+    </qresource>
+    <qresource prefix="/new/prefix1"/>
+</RCC>

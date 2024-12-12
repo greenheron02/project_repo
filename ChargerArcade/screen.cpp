@@ -1,5 +1,16 @@
 #include "screen.h"
 #include "ui_screen.h"
+#include <QApplication>
+#include <QElapsedTimer>
+
+int main(int argc, char *argv[])
+{
+    QApplication a(argc, argv);
+    Screen w;
+    w.show();
+
+    return a.exec();
+}
 
 //QVector<QString> Screen::imageFiles
 
@@ -11,10 +22,12 @@ Screen::Screen(QWidget *parent) :
     this->installEventFilter(this);
     this->setFocus();
 
+    CheckForUSB();
+
     localpath = QDir::currentPath();
     localpath = localpath.split("build/")[0];
     qDebug() << localpath;
-    makeAHKFile();
+    makeAHKFile(0);
 
     /*ahksock.connectToHost("192.168.1.147", 5003);
      if (!ahksock.waitForConnected(1000))
@@ -59,13 +72,15 @@ Screen::Screen(QWidget *parent) :
 
 
 
-    QLabel* header = new QLabel;
+    header = new QLabel;
     header->setFixedHeight(40);
-    header->setText("Select a game");
     QFont fontt = header->font();
+    header->setText("Select a game");
+    qDebug() << "edit " << editMode;
     if(editMode)
     {
-        header->setText("Edit mode active: press > to download selected data, < to load it");
+        qDebug() << "ROOT USER ACCEPTED";
+        header->setText("Edit mode active: press Blue to download selected data, Red to load to it");
         fontt.setPixelSize(20);
     }
 
@@ -82,7 +97,7 @@ Screen::Screen(QWidget *parent) :
     Scroller.setWidgetResizable(false);
     //GridHolderLayout.setWidgetResizable(false);
     //selectscreen.setMaximumHeight(9999999);
-    //GridHolder.setGeometry(100, 100, 1000, 2000); //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    //GridHolder.setGeometry(100, 100, 1000, 2000); //!!!!!!!!!!!!!!
 
     //grid->SetMinimumSize(gridw * gridwidth, 500 * gridheight);
     //runGame();
@@ -124,7 +139,7 @@ Screen::Screen(QWidget *parent) :
     gamescreen.setPalette(back);
     startscreen.setAutoFillBackground(true);
     startscreen.setPalette(back);
-    stack.setCurrentIndex(0); ////////////////////GO TO SPECIFIC PAGE///////////////////////////
+    stack.setCurrentIndex(0); //////GO TO SPECIFIC PAGE//////////
 }
 
 
@@ -134,7 +149,7 @@ void Screen::DrawFrame(QColor col, int id)
     QPixmap *image = images[id];
     QPainter border(image);
     QPen pen;
-    pen.setWidth(100);
+    pen.setWidth(4);
     border.setPen(pen);
     border.drawRect(1,1,gridwidth-2,gridheight-2);
     border.end();
@@ -169,7 +184,7 @@ bool Screen::eventFilter(QObject *obj, QEvent *event)
             //qDebug() << Qt::endl << x << "   " << y << "  " << spot;
         }
 
-        if(key == Qt::Key_N)
+       /* if(key == Qt::Key_N)
         {
             QTcpSocket *socket = new QTcpSocket(this);
 
@@ -185,12 +200,12 @@ bool Screen::eventFilter(QObject *obj, QEvent *event)
             {
                 qDebug() << "Failed to connect!";
             }
-        }
+        }*/
 
-        if(key == Qt::Key_Greater && editMode)
+        if(key == Qt::Key_W && editMode)
             extract(spot+1);
 
-        if(key == Qt::Key_Less && editMode)
+        if(key == Qt::Key_D && editMode)
             insert();
 
 
@@ -205,10 +220,10 @@ bool Screen::eventFilter(QObject *obj, QEvent *event)
 
 
 
-        if(key == Qt::Key_E)
+        /*if(key == Qt::Key_E)
         {
-            endScript();
-        }
+           endScript();
+        }*/
 
 
 
@@ -253,6 +268,8 @@ bool Screen::eventFilter(QObject *obj, QEvent *event)
     }*/
         if(key == Qt::Key_Return)
         {
+            QElapsedTimer timer;
+            timer.start();
             qDebug() << "ENTERED";
             if(stack.currentIndex() == 1)
                 runGame();
@@ -261,10 +278,13 @@ bool Screen::eventFilter(QObject *obj, QEvent *event)
                 stack.setCurrentIndex(1);
                 CheckForUSB();
             }
+             qDebug() << "The operation took" << timer.elapsed() << "milliseconds";
         }
 
         if(key == Qt::Key_E)
         {
+            // QElapsedTimer timer;
+            // timer.start();
             if(stack.currentIndex() == 1)
             {
                 qDebug() << "moved to screen 0";
@@ -275,7 +295,11 @@ bool Screen::eventFilter(QObject *obj, QEvent *event)
             {
                 qDebug() << "moved to screen 1";
                 stack.setCurrentIndex(1);
+                makeAHKFile(0);
+                game->kill();
             }
+
+             //qDebug() << "The operation took" << timer.elapsed() << "milliseconds";
         }
         /*static double val=1.4;
         if(key == Qt::Key_K)
@@ -356,16 +380,16 @@ void Screen::UpdateSpot()
 
         // Capture variables in lambda to update scroll position incrementally
         QObject::connect(timer, &QTimer::timeout, [=]() mutable
-                         {
-                             i++;
-                             Scroller.verticalScrollBar()->setValue(oldscrollval + (newscrollval - oldscrollval)/steps*i);
+        {
+         i++;
+         Scroller.verticalScrollBar()->setValue(oldscrollval + (newscrollval - oldscrollval)/steps*i);
 
-                             if (i >= steps)
-                             {
-                                 timer->stop();
-                                 timer->deleteLater();
-                             }
-                         });
+         if (i >= steps)
+         {
+             timer->stop();
+             timer->deleteLater();
+         }
+        });
 
         timer->start(ms);
     }
@@ -423,6 +447,8 @@ void Screen::UpdateSpot()
 
 void Screen::MakeSelectScreen()
 {
+
+
     spot=-1;
 
     gridwidth = screenw/(gridw*1.3);
@@ -510,8 +536,8 @@ void Screen::MakeSelectScreen()
                 entries.append(entry);
                 grid->addWidget(entry, i, j);
 
-                //programs.append(info[4]);
-                programs.append("CharmStudies.sh");
+                programs.append(info[4]);
+                //programs.append("CharmStudies.sh");
             }
         }
     }
@@ -544,6 +570,8 @@ void Screen::adjustFontSize(QLabel* label)
 Screen::~Screen()
 {
     ahksock.disconnectFromHost();
+    game->kill();
+    endScript();
     delete ui;
 }
 
@@ -617,7 +645,7 @@ void Screen::MakeGameScreen()
 
 
 
-    QLabel *ginfo = new QLabel("ESC: pause game TAB: View creator information");
+    QLabel *ginfo = new QLabel("START: pause game SELECT: View creator information (note: these are just a placeholder)");
     QFont font=ginfo->font();
     font.setPointSize(10);                        //change to adapt
     ginfo->setFont(font);
@@ -680,11 +708,10 @@ void Screen::clear(QLayout* layout)
 
 /*TO DO LIST:
  * Add support for imageless games
- * Add detecting/verifying USB at startup
  * Make the insert function actually replace the file
  * - have the grid update with the new data
- * add the ability to add game, not just edit one
+ * add the ability to add game, not just replace one
  * add the ability to remove games
  * Sanitize all user-input data (from the usb or going into the usb for the other program)
- * ensure they cant plug in a keyboard and mess things up
+ * ensure the user can't plug in a keyboard and mess things up
 */
