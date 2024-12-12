@@ -53,7 +53,7 @@ int checkButton(int pin, String str){
   if (x == 1){ 
     Serial.print("hld ");
     Serial.println(str); 
-    delay(50);
+    delay(30);
     x = digitalRead(pin); 
 
     if (x == 0){
