@@ -11,6 +11,8 @@
         <file>RedHatText.ttf</file>
         <file>RedHatText-VariableFont_wght.ttf</file>
         <file>ahkfile.ahk</file>
+        <file>2Dyssey.png</file>
+        <file>Comp.png</file>
+        <file>Birdsketball.jpg</file>
     </qresource>
-    <qresource prefix="/new/prefix1"/>
 </RCC>

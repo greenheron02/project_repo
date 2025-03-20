@@ -1,0 +1,13 @@
+{
+  "name": "Canary",
+  "carrySpeed" : 350,
+  "flySpeed" : 800,
+  "thrustPower" : 8000,
+  "angularSpeed" : 5000,
+  "maxTackleSpeed" : 1250,
+  "maxTurnSpeed" : 900,
+  "maxTurnSpeedWhileFlapping" : 300,
+  "attack" : 1,
+  "defense" : 1,
+  "special" : "shout"
+}

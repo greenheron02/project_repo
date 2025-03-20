@@ -1,0 +1,25 @@
+{
+  "name": "Speedy",
+  "bots": [
+    {
+      "accuracy" : 0.6,
+      "chanceToShoot" : 0.1,
+      "aggression" : 0,
+      "carrySpeed" : 1000,
+      "flySpeed" : 1500,
+      "thrustPower" : 6000,
+      "angularSpeed" : 6000,
+      "maxTackleSpeed" : 1500,
+      "attack" : 3,
+      "defense" : 1,
+      "special" : "boost",
+      "birdGraphic" : "speedy.png",
+      "legGraphic" : "speedyLeg.png"
+    }
+  ],
+  "trainingDialogue": [
+    "To learn to succeed",
+    "You must first learn to fail",
+    "Also boost lots, that's good too"
+  ]
+}

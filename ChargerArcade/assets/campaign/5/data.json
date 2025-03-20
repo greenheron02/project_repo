@@ -1,0 +1,25 @@
+{
+  "name": "Jon Crow",
+  "bots": [
+    {
+      "accuracy" : 0.8,
+      "chanceToShoot" : 0.8,
+      "aggression" : 10,
+      "carrySpeed" : 400,
+      "flySpeed" : 750,
+      "thrustPower" : 6000,
+      "angularSpeed" : 5000,
+      "maxTackleSpeed" : 1500,
+      "attack" : 2,
+      "defense" : 2,
+      "special" : "boost",
+      "birdGraphic" : "jon.png",
+      "legGraphic" : "jonLeg.png"
+    }
+  ],
+  "trainingDialogue": [
+    "Remember, the mind is your best muscle",
+    "Big beaks can move rocks",
+    "But big wings can move mountains"
+  ]
+}

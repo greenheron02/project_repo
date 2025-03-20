@@ -1,0 +1,25 @@
+{
+  "name": "Daryl",
+  "bots": [
+    {
+      "accuracy" : 0.1,
+      "chanceToShoot" : 0.8,
+      "aggression" : 0.0,
+      "carrySpeed" : 300,
+      "flySpeed" : 400,
+      "thrustPower" : 3000,
+      "angularSpeed" : 3000,
+      "maxTackleSpeed" : 1500,
+      "attack" : 1,
+      "defense" : 1,
+      "special" : "boost",
+      "birdGraphic" : "daryl.png",
+      "legGraphic" : "darylLeg.png"
+    }
+  ],
+  "trainingDialogue": [
+    "If you want to win this thing",
+    "You need to be in shape",
+    "Flap those wings Little Birdie"
+  ]
+}

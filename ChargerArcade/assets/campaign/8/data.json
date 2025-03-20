@@ -1,0 +1,38 @@
+{
+  "name": "The King",
+  "bots": [
+    {
+      "accuracy" : 1,
+      "chanceToShoot" : 0.8,
+      "aggression" : 0.5,
+      "carrySpeed" : 450,
+      "flySpeed" : 800,
+      "thrustPower" : 15000,
+      "angularSpeed" : 10000,
+      "maxTackleSpeed" : 1500,
+      "attack" : 3,
+      "defense" : 3,
+      "special" : "boost",
+      "birdGraphic" : "king.png",
+      "legGraphic" : "kingLeg.png"
+    }
+  ],
+  "trainingDialogue": [
+    "Well, that wraps everything up nicely.",
+    "You're the new champ.",
+    "The King is dead.",    
+    "Not sure why you needed to actually kill the King.",
+    "That seemed a little extreme to me, if I'm honest.",
+    "But that's how it is I suppose.",
+    "The animal kingdom is a pretty wild place.",
+    "What's that, \nyou want to play more Birdsketball?",
+    "Well then you need to invite some friends over \nand play the VS mode.",    
+    "Then you can laugh at them while they \nstruggle to tell which way their bird is facing.",
+    "Meanwhile you're dropping bombs from \ncenter court like Larry Bird.",
+    "Don't kill them when you win though... \nthat's messed up.",
+    "And provide snacks. Your friends will appreciate that.",
+    "Time to go back to the menu I suppose.",
+    "The music stopped playing quite a while ago.",
+    "Things are getting a little awkward..."
+  ]
+}

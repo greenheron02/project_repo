@@ -1,0 +1,25 @@
+{
+  "name": "Big Red",
+  "bots": [
+    {
+      "accuracy" : 0.5,
+      "chanceToShoot" : 0.8,
+      "aggression" : 20,
+      "carrySpeed" : 300,
+      "flySpeed" : 350,
+      "thrustPower" : 3000,
+      "angularSpeed" : 5000,
+      "maxTackleSpeed" : 2500,
+      "attack" : 1,
+      "defense" : 1,
+      "special" : "boost",
+      "birdGraphic" : "bigred.png",
+      "legGraphic" : "bigredLeg.png"
+    }
+  ],
+  "trainingDialogue": [
+    "Here's a tip, Little Birdie",
+    "You rotate faster...",
+    "when you're not flapping"
+  ]
+}

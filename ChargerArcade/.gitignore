@@ -1,0 +1,50 @@
+# Qt build and generated files
+*.pro.user
+*.pro.user.*
+*.qmake.stash
+*.autosave
+*.moc
+*.qrc
+*.qmlc
+*.obj
+*.o
+*.a
+*.so
+*.so.*
+*.d
+*.lo
+*.la
+*.rej
+*.swp
+*.map
+*.qch
+*.idb
+*.pdb
+
+# Build directories
+build*/
+CMakeFiles/
+CMakeCache.txt
+Makefile
+*.make
+cmake_install.cmake
+
+# QtCreator Specific
+*.creator*
+.qtc_clangd/
+.qtc/
+.qt_toolbar.ini
+
+# Logs, caches, backups
+*.log
+*.bak
+*.tmp
+.DS_Store
+
+# Binaries
+bin/
+*.exe
+*.dll
+*.app
+*.dylib
+*.class

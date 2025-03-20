@@ -1,0 +1,13 @@
+{
+  "name": "Duck",
+  "carrySpeed" : 500,
+  "flySpeed" : 500,
+  "thrustPower" : 5000,
+  "angularSpeed" : 4750,
+  "maxTackleSpeed" : 1250,
+  "maxTurnSpeed" : 800,
+  "maxTurnSpeedWhileFlapping" : 275,
+  "attack" : 3,
+  "defense" : 3,
+  "special" : "duckBoost"
+}
