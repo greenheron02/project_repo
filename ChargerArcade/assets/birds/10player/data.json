@@ -1,0 +1,11 @@
+{
+  "name": "Seagull",
+  "carrySpeed" : 400,
+  "flySpeed" : 650,
+  "thrustPower" : 6000,
+  "angularSpeed" : 4750,
+  "maxTackleSpeed" : 1750,
+  "attack" : 2,
+  "defense" : 2,
+  "special" : "boost"
+}

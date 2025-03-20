@@ -1,95 +1,146 @@
-#include "screen.h"
-#include "ui_screen.h"
 #include <QApplication>
 #include <QElapsedTimer>
+#include "Charcade.h"
 
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
-    Screen w;
-    w.show();
+    //connect(a, QApplication::e)
+    Screen m(1);
+    Screen l(2);
+    Screen w(3);
+    Screen j(4);
+    m.build();
+
+    if (m.splitScreenVal) {
+        l.build();
+        w.build();
+        j.build();
+        if (m.doCommsVal) {
+            m.Connect();
+            l.Connect();
+            w.Connect();
+            j.Connect();
+        }
+    } else if (m.doCommsVal)
+        m.Connect();
+
+    // Create QThreads for each Screen
+    /*QThread *threadM = new QThread();
+    QThread *threadL = new QThread();
+    QThread *threadW = new QThread();
+    QThread *threadJ = new QThread();
+
+    // Move the Screen instances to their respective threads
+    m.moveToThread(threadM);
+    l.moveToThread(threadL);
+    w.moveToThread(threadW);
+    j.moveToThread(threadJ);
+
+    // Start the threads
+    threadM->start();
+    threadL->start();
+    threadW->start();
+    threadJ->start();*/
+
+    // Now that threads are started, call Connect() on each instance
 
     return a.exec();
 }
 
 //QVector<QString> Screen::imageFiles
 
-
-Screen::Screen(QWidget *parent) :
-    QWidget(parent),
-    ui(new Ui::Screen)
+Screen::Screen(int id)
 {
+    ID = id;
+    IdReference.remove(ID - 1);
+    splitScreenVal = splitScreen;
+    doCommsVal = DoComms;
+}
+
+void Screen::build()
+{
+    Sign = QString::number(ID) + ":";
+    if (ID != 1)
+        SetUpServer();
+
     this->installEventFilter(this);
-    this->setFocus();
+    /*
+        this->setFocus();
 
     CheckForUSB();
 
     localpath = QDir::currentPath();
     localpath = localpath.split("build/")[0];
     qDebug() << localpath;
-    makeAHKFile(0);
+    makeAHKFile(0);*/
 
-    /*ahksock.connectToHost("192.168.1.147", 5003);
-     if (!ahksock.waitForConnected(1000))
-        qDebug() << "AHK CONNECTION FAILURE";*/
-    //runGame();
-    //insert();
+    if (AHKControl) //INCOMPLETE
+    {
+        ahksock.connectToHost("192.168.1.147", 5003);
+        if (!ahksock.waitForConnected(1000))
+            qDebug() << "AHK CONNECTION FAILURE";
+    }
 
-    /*   *\  }
+    /* Invert the following slash to flip  *\  }
     void Screen::temp()
     {/**/
     screenw = monitor.geometry().width();
     screenh = monitor.geometry().height();
-
-
-
-    if(screenw > screenh*3)
+    if (splitScreen) {
         screenw /= 2;
+        screenh /= 2;
+    }
 
-
-
-
+    if (screenw > screenh * 3)
+        screenw /= 2;
 
     /*gridheight=monitor.geometry().height()/gridh-100;
     gridwidth=monitor.geometry().width()/gridw-200;*/
 
     //ui->setupUi(this);
 
-
-
-    QWidget *screen = new QWidget(this);  // Set layout for Screen
-    screen->setMinimumWidth(screenw);
-    screen->setMinimumHeight(screenh);
+    //QWidget *screen = new QWidget(this);  // Set layout for Screen
+    //screen->hide();
+    //screen->setMinimumWidth(screenw);
+    //screen->setMinimumHeight(screenh);
 
     //grid->setSpacing(0);
-
 
     MakeTitleScreen();
 
     MakeGameScreen();
     MakeSelectScreen();
+    ///////////TEMPORARY FIX FOR AN ISSUE I CANT TRY TO FIGURE OUT RIGHT NOW/////////////
+    clear(grid);
     MakeSelectScreen();
-
-
+    UpdateSpot();
+    ///////////TEMPORARY FIX FOR AN ISSUE I CANT TRY TO FIGURE OUT RIGHT NOW/////////////
 
     header = new QLabel;
+    QPalette headerback;
+    headerback.setColor(QPalette::Window, UAHLBlue);
     header->setFixedHeight(40);
+    header->setPalette(headerback);
+    header->setAutoFillBackground(true);
     QFont fontt = header->font();
-    header->setText("Select a game");
-    qDebug() << "edit " << editMode;
-    if(editMode)
-    {
+    header->setText("Select a game with A");
+    //qDebug() << "edit " << editMode;
+    if (editMode) {
         qDebug() << "ROOT USER ACCEPTED";
-        header->setText("Edit mode active: press Blue to download selected data, Red to load to it");
+        header->setText(
+            "Edit mode active: press Blue to download selected data, Red to load to it");
         fontt.setPixelSize(20);
     }
 
     fontt.setPixelSize(30);
     header->setAlignment(Qt::AlignCenter);
     header->setFont(fontt);
-    startLayout.addWidget(header);
-    startLayout.addWidget(&Scroller);
-    selectscreen.setLayout(&startLayout);
+    adjustFontSize(header, screenw);
+
+    selectLayout.addWidget(header);
+    selectLayout.addWidget(&Scroller);
+    selectscreen.setLayout(&selectLayout);
 
     grid->setContentsMargins(0, 0, 0, buffer);
 
@@ -107,25 +158,27 @@ Screen::Screen(QWidget *parent) :
     stack.addWidget(&selectscreen);
     stack.addWidget(&gamescreen);
     stack.addWidget(&managescreen);
+    setLayout(&stack);
 
+    setWindowFlags(Qt::Window | Qt::FramelessWindowHint);
+    showNormal();
+    resize(screenw, screenh);
+    if (splitScreen) {
+        xspot = (ID < 3) ? 0 : screenw;
+        yspot = (ID % 2 == 1) ? 0 : screenh;
+        move(xspot, yspot);
+    } else
+        move(0, 0);
 
-    screen->setLayout(&stack);
-    //screen->show();
+    if (DoStatus)
+        MakeStatusBar();
+    MakeNoti();
 
-    showMaximized();
-
-
-    gamescreen.setFixedSize(screenw, screenh-90);
-
-
-
-    qDebug() << screenh;
-
-    Scroller.setFixedHeight(screenh-header->height());
-
-    selectscreen.setFixedSize(screenw, screenh-10);
-
-    startscreen.setFixedSize(screenw, screenh);
+    //qDebug() << screenh;
+    gamescreen.setFixedSize(screenw, screenh - 90);
+    Scroller.setFixedHeight(screenh - header->height());
+    //selectscreen.setFixedSize(screenw, screenh-10);
+    //startscreen.setFixedSize(screenw, screenh);
 
     ScrollArea.setLayout(grid);
     Scroller.setWidget(&ScrollArea);
@@ -134,241 +187,57 @@ Screen::Screen(QWidget *parent) :
     back.setColor(QPalette::Window, UAHLGrey);
 
     ScrollArea.setAutoFillBackground(true);
-    selectscreen.setPalette(back);           //maybe could be done to screen itself instead of each individual one
+    setPalette(back); //maybe could be done to screen itself instead of each individual one
     gamescreen.setAutoFillBackground(true);
-    gamescreen.setPalette(back);
+    //gamescreen.setPalette(back);
     startscreen.setAutoFillBackground(true);
-    startscreen.setPalette(back);
+    //startscreen.setPalette(back);
     stack.setCurrentIndex(0); //////GO TO SPECIFIC PAGE//////////
+    makeAHKFile(0);
+    setFocus();
 }
 
 
-void Screen::DrawFrame(QColor col, int id)
+QPixmap* Screen::DrawFrame(QPixmap *image, QColor col, int thickness)
 {
-    qDebug() << "framing";
-    QPixmap *image = images[id];
     QPainter border(image);
     QPen pen;
-    pen.setWidth(4);
+    pen.setWidth(thickness);
+    pen.setColor(col);
     border.setPen(pen);
-    border.drawRect(1,1,gridwidth-2,gridheight-2);
+    border.drawRect(1, 1, gridwidth - 2, gridheight - 2);
     border.end();
-    *image = image->scaled(gridwidth, gridheight, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
-    entries[id]->findChild<QLabel*>("logo")->setPixmap(*image);
-    entries[id]->findChild<QLabel*>("logo")->update();
+    return image;
 }
 
-bool Screen::eventFilter(QObject *obj, QEvent *event)
+/*bkp void Screen::DrawFrame(QColor col, int id)
 {
-    if(event->type() == QEvent::KeyPress)
-    {
-        int key = (static_cast<QKeyEvent *>(event))->key();
-        if(key == Qt::Key_W || key == Qt::Key_A || key == Qt::Key_S || key == Qt::Key_D)
-        {
-            DrawFrame(UAHDBlue, spot);
-
-            if(key == Qt::Key_W)
-                spot-=gridw;
-
-            if(key == Qt::Key_A)
-                spot--;
-
-            if(key == Qt::Key_S)
-                spot+=gridw;
-
-            if(key == Qt::Key_D)
-                spot++;
-
-            UpdateSpot();
-            DrawFrame(UAHYellow, spot);
-            //qDebug() << Qt::endl << x << "   " << y << "  " << spot;
-        }
-
-       /* if(key == Qt::Key_N)
-        {
-            QTcpSocket *socket = new QTcpSocket(this);
-
-            // Connect to server at localhost on port 12345
-            socket->connectToHost("127.0.0.1", 12345);
-
-            // Check if connected successfully
-            if (socket->waitForConnected(5000))
-            {
-                qDebug() << "Connected to server!";
-                socket->write("Hello from Qt client!");
-            } else
-            {
-                qDebug() << "Failed to connect!";
-            }
-        }*/
-
-        if(key == Qt::Key_W && editMode)
-            extract(spot+1);
-
-        if(key == Qt::Key_D && editMode)
-            insert();
-
-
-
-
-
-        /*if(key == Qt::Key_R)
-        {
-            qDebug() << "sending";
-            sendToAHK("a");
-        }*/
-
-
-
-        /*if(key == Qt::Key_E)
-        {
-           endScript();
-        }*/
-
-
-
-
-
-
-
-        /*if(key == Qt::Key_J)
-    {
-        QKeyEvent *event = new QKeyEvent(QEvent::KeyPress, Qt::Key_Left, Qt::NoModifier);
-        QApplication::postEvent(process, event);
-    }
-
-    if(key == Qt::Key_I)
-    {
-        QKeyEvent *event = new QKeyEvent(QEvent::KeyPress, Qt::Key_Up, Qt::NoModifier);
-        QApplication::postEvent(process, event);
-    }
-    if(key == Qt::Key_K)
-    {
-        QKeyEvent *event = new QKeyEvent(QEvent::KeyPress, Qt::Key_Down, Qt::NoModifier);
-        QApplication::postEvent(process, event);
-    }
-    if(key == Qt::Key_L)
-    {
-        QKeyEvent *event = new QKeyEvent(QEvent::KeyPress, Qt::Key_Right, Qt::NoModifier);
-        QApplication::postEvent(process, event);
-    }
-    if(key == Qt::Key_U)
-    {
-    QMouseEvent *moveEvent = new QMouseEvent(QEvent::MouseMove, QPoint(100, 200), Qt::NoButton, Qt::NoButton, Qt::NoModifier);
-    QApplication::postEvent(process, moveEvent);
-    }
-
-    if(key == Qt::Key_BracketRight)
-    {
-       diff+=0.1;
-    }
-    if(key == Qt::Key_BracketLeft)
-    {
-       diff-=0.1;
-    }*/
-        if(key == Qt::Key_Return)
-        {
-            QElapsedTimer timer;
-            timer.start();
-            qDebug() << "ENTERED";
-            if(stack.currentIndex() == 1)
-                runGame();
-            if(stack.currentIndex() == 0)
-            {
-                stack.setCurrentIndex(1);
-                CheckForUSB();
-            }
-             qDebug() << "The operation took" << timer.elapsed() << "milliseconds";
-        }
-
-        if(key == Qt::Key_E)
-        {
-            // QElapsedTimer timer;
-            // timer.start();
-            if(stack.currentIndex() == 1)
-            {
-                qDebug() << "moved to screen 0";
-                stack.setCurrentIndex(0);
-            }
-
-            if(stack.currentIndex() == 2)
-            {
-                qDebug() << "moved to screen 1";
-                stack.setCurrentIndex(1);
-                makeAHKFile(0);
-                game->kill();
-            }
-
-             //qDebug() << "The operation took" << timer.elapsed() << "milliseconds";
-        }
-        /*static double val=1.4;
-        if(key == Qt::Key_K)
-            val+=0.1;
-
-        if(key == Qt::Key_L)
-            val-=0.1;
-
-
-        if(key == Qt::Key_O)
-            val=(total/gridw)*0.45+0.4;
-
-         ScrollArea.setFixedHeight((total/gridw)*gridheight*val+buffer);
-        qDebug() << "val: " << val;*/
-
-
-
-
-
-
-
-        if(key==Qt::Key_Q)
-        {
-            MakeSelectScreen();
-        }
-        if(key==Qt::Key_X)
-        {
-            clear(grid);
-        }
-        if(key == Qt::Key_F)
-        {
-            clear(grid);
-            if(gridw < 4)
-                gridw++;
-            MakeSelectScreen();
-            UpdateSpot();
-        }
-        if(key == Qt::Key_G)
-        {
-            clear(grid);
-            if(gridw > 2)
-                gridw--;
-            MakeSelectScreen();
-            UpdateSpot();
-        }
-    }
-
-    return QWidget::eventFilter(obj, event);
-}
+    QPixmap *Logo = images[id];
+    QPainter border(Logo);
+    QPen pen;
+    pen.setWidth(borderThickness);
+    pen.setColor(col);
+    border.setPen(pen);
+    border.drawRect(1, 1, gridwidth - 2, gridheight - 2);
+    border.end();
+    // *Logo = Logo->scaled(gridwidth, gridheight, Qt::IgnoreAspectRatio,Qt::SmoothTransformation); //is this necessary?
+    entries[id]->findChild<QLabel *>("logo")->setPixmap(*Logo);
+    entries[id]->findChild<QLabel *>("logo")->update();
+}*/
 
 
 void Screen::UpdateSpot()
 {
     static int oldscroll;
 
-    if(spot < 0)
-        spot=0;
-    if(spot > total-1)
-        spot=total-1;
-    if(oldscroll != (int)(spot/gridw))
-    {
+    if (spot < 0)
+        spot = 0;
+    if (spot > total - 1)
+        spot = total - 1;
+    if (oldscroll != (int) (spot / gridw)) {
         //int oldscrollval = Scroller.verticalScrollBar()->value(), newscrollval = (((ceil(total/gridw))/(spot/gridw))*ScrollArea.height());
-        int oldscrollval = Scroller.verticalScrollBar()->value(), newscrollval = ((spot/gridw)*gridheight*diff);
-
-
-
-
-
-
+        int oldscrollval = Scroller.verticalScrollBar()->value(),
+            newscrollval = ((spot / gridw) * gridheight * diff);
 
         //qDebug() << oldscroll << "-" << (int)(spot/gridw) << "-" << oldscrollval << "-" << newscrollval << "-" << oldscrollval+newscrollval-oldscrollval;
 
@@ -376,24 +245,23 @@ void Screen::UpdateSpot()
         int ms = 6;
         int i = 0;
 
-        QTimer* timer = new QTimer(this);
+        QTimer *timer = new QTimer(this);
 
         // Capture variables in lambda to update scroll position incrementally
-        QObject::connect(timer, &QTimer::timeout, [=]() mutable
-        {
-         i++;
-         Scroller.verticalScrollBar()->setValue(oldscrollval + (newscrollval - oldscrollval)/steps*i);
+        QObject::connect(timer, &QTimer::timeout, [=]() mutable {
+            i++;
+            Scroller.verticalScrollBar()->setValue(oldscrollval
+                                                   + (newscrollval - oldscrollval) / steps * i);
 
-         if (i >= steps)
-         {
-             timer->stop();
-             timer->deleteLater();
-         }
+            if (i >= steps) {
+                timer->stop();
+                timer->deleteLater();
+            }
         });
 
         timer->start(ms);
     }
-    oldscroll = oldscroll=(int)(spot/gridw);
+    oldscroll = oldscroll = (int) (spot / gridw);
 }
 
 /*void Screen::UpdateSpot()
@@ -444,113 +312,7 @@ void Screen::UpdateSpot()
 
 }*/
 
-
-void Screen::MakeSelectScreen()
-{
-
-
-    spot=-1;
-
-    gridwidth = screenw/(gridw*1.3);
-    gridheight = gridwidth*0.5;
-    ScrollArea.setFixedSize(screenw, (ceil(double(total)/gridw))*gridheight*1.407+buffer);
-
-    QGuiApplication::setFont(QFont(QFontDatabase::applicationFontFamilies(QFontDatabase::addApplicationFont(":/RedHatText.ttf")).at(0), (int)(gridwidth/30)));
-
-    images.clear();
-    programs.clear();
-    QFile file(":/ChargerArcadeData.txt");
-    QTextStream stream(&file);
-    file.open(QIODevice::ReadOnly|QIODevice::Text);
-
-    bool coninueAdding=true;
-    for(int i=1; coninueAdding; i++)
-    {
-        for(int j=1; j < gridw+1 && coninueAdding; j++)
-        {
-            QString line=stream.readLine();
-            QStringList info=line.split("||||");
-
-            if(line.isEmpty() || line=="\t")
-            {
-                total++;
-                coninueAdding=false;
-                /* gridh=i;
-                if(j==1)
-                    gridh=i-1;*/
-                //qDebug() << gridw << "x" << gridh  << "    " << total;
-
-            }
-            else
-            {
-                //qDebug() << info[1] << "~~" << info[2] << "~~" << info[3] << "~~" << info[4];
-
-                spot++;
-                QDialog *entry = new QDialog;
-                QVBoxLayout *box = new QVBoxLayout;
-                QLabel *title = new QLabel, *credit = new QLabel;
-
-                QPixmap *image = new QPixmap(":/" + info[2]);
-                QPixmap *Logo = new QPixmap(gridwidth, gridheight);
-                Logo->fill(QColor("#002D72"));
-
-                QPainter border(Logo);
-                *image = image->scaled(gridwidth - (2+borderThickness), gridheight - (2+borderThickness), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
-                border.drawPixmap(6, 6, *image);
-                border.end();
-                images.append(Logo);
-
-
-
-
-
-
-
-                QLabel *logo = new QLabel;
-                logo->setPixmap(*Logo);
-                logo->setObjectName("logo");
-                //logo->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-
-                title->setText(info[1]);
-                title->setAlignment(Qt::AlignHCenter);
-                title->setMinimumWidth(gridwidth);
-                title->setMaximumWidth(gridwidth);
-                adjustFontSize(title);
-                title->setObjectName("title");
-
-
-                credit->setText("<i>"+info[3]+"</i>");
-                credit->setAlignment(Qt::AlignHCenter);
-                credit->setMinimumWidth(gridwidth);
-                credit->setMaximumWidth(gridwidth);
-                adjustFontSize(credit);
-                credit->setObjectName("credit");
-
-
-                box->addWidget(title);
-                box->addWidget(logo);
-                box->addWidget(credit);
-
-
-                entry->setLayout(box);
-                entries.append(entry);
-                grid->addWidget(entry, i, j);
-
-                programs.append(info[4]);
-                //programs.append("CharmStudies.sh");
-            }
-        }
-    }
-    //qDebug() << "total:" << spot;
-    total=spot+1;
-    spot=prevSpot;
-    DrawFrame(UAHYellow, spot);
-
-
-
-}
-
-void Screen::adjustFontSize(QLabel* label)
+void Screen::adjustFontSize(QLabel *label, int max)
 {
     int minFontSize = 2;
     int fontSize = label->font().pointSize();
@@ -558,132 +320,24 @@ void Screen::adjustFontSize(QLabel* label)
 
     //if(spot == 0)
     //qDebug() <<  ((double)(QFontMetrics(font).horizontalAdvance(label->text())))/gridwidth;
-    while (fontSize >= minFontSize && QFontMetrics(font).horizontalAdvance(label->text()) > gridwidth)
-    {
+    while (fontSize >= minFontSize && QFontMetrics(font).horizontalAdvance(label->text()) > max) {
         fontSize--; // Decrease font size
         font.setPointSize(fontSize);
         label->setFont(font);
     }
 }
 
+Screen::~Screen() {}
 
-Screen::~Screen()
-{
-    ahksock.disconnectFromHost();
-    game->kill();
-    endScript();
-    delete ui;
-}
-
-
-void Screen::MakeTitleScreen()
-{
-    QVBoxLayout *startlayout = new QVBoxLayout(); //MIGHT NOT NEED TO BE A POINTER
-
-    QLabel *start = new QLabel(), *title = new QLabel();
-    title->setText("Charger Arcade");
-    QFont font = title->font();
-    font.setPointSize(screenw/30);
-    title->setFont(font);
-
-    start->setText("<font color='#888888'>Press Start</font>");
-    font = start->font();
-    font.setPointSize(screenw/40);
-    start->setFont(font);
-
-    QPixmap *UAH = new QPixmap(":/UAH.png");
-    QLabel *UAHl = new QLabel();
-
-    //int newHeight = UAHwidth * UAH->height() / UAH->width();
-
-
-    int UAHw = static_cast<int>(screenw * 0.6);
-    int UAHh = UAHw*0.5306;
-    qDebug() << UAHw << " sdfgfde" << UAHh;
-    *UAH = UAH->scaled(UAHw, UAHh, Qt::KeepAspectRatio, Qt::SmoothTransformation);
-
-    //UAHl->setMaximumWidth(static_cast<int>(screenw * 0.2));
-    UAHl->setPixmap(*UAH);
-
-    UAHl->setAlignment(Qt::AlignHCenter);
-    title->setAlignment(Qt::AlignHCenter);
-    start->setAlignment(Qt::AlignHCenter);
-
-    startscreen.setLayout(startlayout);
-
-    startlayout->addWidget(UAHl);
-    startlayout->addWidget(title);
-    startlayout->addWidget(start);
-    startlayout->setAlignment(Qt::AlignTop);
-}
-
-void Screen::MakeGameScreen()
-{
-    QVBoxLayout *gamelayout = new QVBoxLayout();
-
-    QPalette pal = QPalette();
-
-    // set black background
-    // Qt::black / "#000000" / "black"
-
-    pal.setColor(QPalette::Window, Qt::white);
-    gamescreen.setAutoFillBackground(true);
-    gamescreen.setPalette(pal);
-
-    QHBoxLayout *barlayout = new QHBoxLayout;
-
-    QWidget *bar = new QWidget;
-
-    pal.setColor(QPalette::Window, Qt::gray);
-    bar->setAutoFillBackground(true);
-    bar->setPalette(pal);
-    //bar->show();
-
-    bar->setMinimumWidth(screenw/2);
-    bar->setMaximumHeight(30);
-    barlayout->setAlignment(Qt::AlignBottom);
-
-
-
-    QLabel *ginfo = new QLabel("START: pause game SELECT: View creator information (note: these are just a placeholder)");
-    QFont font=ginfo->font();
-    font.setPointSize(10);                        //change to adapt
-    ginfo->setFont(font);
-    barlayout->addWidget(ginfo);
-    bar->setLayout(barlayout);
-
-    QPixmap *box = new QPixmap;
-
-    box->fill(QColor("red"));
-
-    QLabel *boxx = new QLabel;
-    boxx->setPixmap(*box);
-    *box = box->scaled(300, 300, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
-
-    gamelayout->addWidget(boxx);
-    gamelayout->addStretch();
-    gamelayout->addWidget(bar);
-
-
-    gamescreen.setLayout(gamelayout);
-}
-
-void Screen::MakeEditScreen()
-{
-
-}
-
-
-
-
-void Screen::clear(QLayout* layout)
+void Screen::clear(QLayout *layout)
 {
     prevSpot = spot;
     // Check if layout is valid
-    if (!layout) return;
+    if (!layout)
+        return;
 
     // Iterate through all items in the layout
-    QLayoutItem* item;
+    QLayoutItem *item;
     while ((item = layout->takeAt(0)) != nullptr) {
         // If the item is a widget, delete it
         if (item->widget()) {
@@ -699,7 +353,14 @@ void Screen::clear(QLayout* layout)
     }
 }
 
-
+void Screen::Overlay()
+{
+    QWidget *overlay = new QWidget();
+    overlay->setWindowFlags(Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint);
+    overlay->setAttribute(Qt::WA_TranslucentBackground);
+    overlay->resize(200, 200);
+    overlay->show();
+}
 
 /*void Screen::flash(QString text)
 {
@@ -714,4 +375,9 @@ void Screen::clear(QLayout* layout)
  * add the ability to remove games
  * Sanitize all user-input data (from the usb or going into the usb for the other program)
  * ensure the user can't plug in a keyboard and mess things up
+ * fix the scrolling so bottom options are able to be visible
+ * edit the spacing of grid items
+ * move the game info storage to sql and work on figuring sorting/filter options
+ * maybe attach the grid spacing to a menu type thing
+ *
 */

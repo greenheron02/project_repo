@@ -1,0 +1,55 @@
+{
+  "name": "Harry, Barry & Gary",
+  "bots": [
+    {
+      "accuracy" : 0.4,
+      "chanceToShoot" : 0.6,
+      "aggression" : 0.4,
+      "carrySpeed" : 300,
+      "flySpeed" : 500,
+      "thrustPower" : 5000,
+      "angularSpeed" : 3500,
+      "maxTackleSpeed" : 1500,
+      "attack" : 1,
+      "defense" : 1,
+      "special" : "boost",
+      "birdGraphic" : "harry.png",
+      "legGraphic" : "harryLeg.png"
+    },
+    {
+      "accuracy" : 0.4,
+      "chanceToShoot" : 0.6,
+      "aggression" : 0.4,
+      "carrySpeed" : 300,
+      "flySpeed" : 500,
+      "thrustPower" : 5000,
+      "angularSpeed" : 3500,
+      "maxTackleSpeed" : 1500,
+      "attack" : 1,
+      "defense" : 1,
+      "special" : "boost",
+      "birdGraphic" : "barry.png",
+      "legGraphic" : "harryLeg.png"
+    },
+    {
+      "accuracy" : 0.4,
+      "chanceToShoot" : 0.6 ,
+      "aggression" : 0.4,
+      "carrySpeed" : 300,
+      "flySpeed" : 500,
+      "thrustPower" : 5000,
+      "angularSpeed" : 3500,
+      "maxTackleSpeed" : 1500,
+      "attack" : 1,
+      "defense" : 1,
+      "special" : "boost",
+      "birdGraphic" : "gary.png",
+      "legGraphic" : "harryLeg.png"
+    }
+  ],
+  "trainingDialogue": [
+    "Here's another tip, Little Birdie",
+    "Boost into a wall",
+    "And you will rebound in the other direction"
+  ]
+}

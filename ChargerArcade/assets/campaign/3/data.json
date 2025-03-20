@@ -1,0 +1,25 @@
+{
+  "name": "Ronald",
+  "bots": [
+    {
+      "accuracy" : 0.3,
+      "chanceToShoot" : 0.5,
+      "aggression" : 10,
+      "carrySpeed" : 400,
+      "flySpeed" : 650,
+      "thrustPower" : 6000,
+      "angularSpeed" : 5000,
+      "maxTackleSpeed" : 1500,
+      "attack" : 3,
+      "defense" : 3,
+      "special" : "boost",
+      "birdGraphic" : "ronald.png",
+      "legGraphic" : "ronaldLeg.png"
+    }
+  ],
+  "trainingDialogue": [
+    "Remember your training",
+    "Float like a seagull",
+    "Sting like a seagull"
+  ]
+}

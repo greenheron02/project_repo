@@ -26,17 +26,21 @@ DEFINES += QT_DEPRECATED_WARNINGS
 CONFIG += c++11
 
 SOURCES += \
-        comm.cpp \
 #       gamepad.cpp \
-        main.cpp \
-        screen.cpp
+#       main.cpp \
+    comm.cpp \
+    keyevents.cpp \
+    progs.cpp \
+    screen.cpp \
+    z-admin.cpp \
+    z-builders.cpp
 
 HEADERS += \
+    Charcade.h
 #       gamepad.h \
-        screen.h
 
 FORMS += \
-        screen.ui
+    Charcade.ui
 
 DEFINES+=PROJECT_LOCATION="$$shell_path($$_PRO_FILE_PWD_)"
 
@@ -51,3 +55,5 @@ screen.qrc
 
 DISTFILES += \
     testfile.txt
+
+QMAKE_CXXFLAGS += -Wcomment

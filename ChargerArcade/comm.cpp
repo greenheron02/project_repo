@@ -1,259 +1,238 @@
-#include "screen.h"
-void Screen::extract(int num)
+#include "Charcade.h"
+#include <QTcpServer>
+#include <QTcpSocket>
+
+void Screen::ConnectToPeers()
 {
-    QFile OGfile(":/ChargerArcadeData.txt");
-    QString Line;
-
-    OGfile.open(QIODevice::ReadOnly | QIODevice::Text);
-
-    QTextStream Data_In(&OGfile);
-    static QRegularExpression regex;
-
-    regex.setPattern(QString::number(num)+"\\|\\|\\|\\|");
-
-
-    while (!Data_In.atEnd())
+    for(int i=ID; i < TerminalCount; i++)
     {
-        QString line = Data_In.readLine();
-        if (regex.match(line).hasMatch())
-            Line = line;
-    }
-
-    //QFile outfile("C:/Users/wesri/School/ChargerArcade/ChargerArcade/TestUsbContents.txt");
-    QFile TEMPOut("C:/data.txt");
-    TEMPOut.open(QIODevice::WriteOnly | QIODevice::Text);
-    QTextStream USB_out(&TEMPOut);
-    USB_out << Line;
-    OGfile.close();
-    TEMPOut.close();
-    //return Line;
-}
-
-void Screen::insert()
-{
-    QFile file("C:/data.txt");
-    QTextStream in(&file);
-    file.open(QIODevice::ReadOnly | QIODevice::Text);
-    QString USBData = in.readLine();
-
-
-    QStringList info=USBData.split("||||");
-    int id = info[0].toInt()-1;
-
-    file.close();
-    QString pre = QString::number(id) + "||||";
-
-    file.setFileName(":/ChargerArcadeData.txt");
-    QString tempFilePath = ":/ChargerArcadeDataTEMP.txt";
-    QFile tempFile(tempFilePath);
-
-    file.open(QIODevice::ReadOnly | QIODevice::Text);
-    tempFile.open(QIODevice::WriteOnly | QIODevice::Text);
-
-    QTextStream out(&tempFile);
-
-    while (!in.atEnd())
-    {
-        QString line = in.readLine();
-        if (line.startsWith(pre))
-            out << USBData << "\n";
-        else
-            out << line << "\n";
-    }
-
-    file.close();
-    tempFile.close();
-
-    // Replace the original file with the temporary file.
-    /*if (!QFile::remove(filePath)) {
-        qDebug() << "Failed to remove original file:" << filePath;
-        return;
-    }*/
-
-    /*if (!QFile::rename(tempFilePath, filePath)) {
-        qDebug() << "Failed to rename temporary file:" << tempFilePath;
-        return;
-    }*/
-
-
-
-
-
-
-
-    entries[id]->findChild<QLabel*>("title")->setText(info[1]);
-    entries[id]->findChild<QLabel*>("credit")->setText("<i>"+info[3]+"</i>");
-
-    images[id]->fill(QColor("#002D72"));
-    images[id]->load(":/"+info[2]);
-    *images[id] = images[id]->scaled(gridwidth, gridheight, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
-    entries[id]->findChild<QLabel*>("logo")->setPixmap(*images[id]);
-    entries[id]->findChild<QLabel*>("logo")->update();
-    adjustFontSize(entries[id]->findChild<QLabel*>("title"));
-    adjustFontSize(entries[id]->findChild<QLabel*>("credit"));
-
-    if(spot == id)
-        DrawFrame(UAHYellow, id);
-    else
-        DrawFrame(UAHDBlue, id);
-
-    qDebug() << "Line replacement completed successfully.";
-
-}
-
-void Screen::CheckForUSB()
-{
-    QFile file("C:/key.txt");
-    QTextStream stream(&file);
-    if(file.open(QIODevice::ReadOnly|QIODevice::Text))
-    {
-        QString line=stream.readLine();
-        //qDebug() << line;
-        if(line == keyPhrase)
+        //qDebug() << "connectiong to " << i;
+        if(connectToPeer(i))
         {
-            editMode=true;
-            qDebug() << "ROOT USER";
+            //qDebug() << qPrintable(Sign) << qPrintable(">") << qPrintable(ip) << ":" << port;
+            qDebug() << qPrintable(Sign) << qPrintable(">") << qPrintable(QString::number(i+1));
+            //socket->write("Hello from peer");
+            registerConnection(i, peerSockets[i]);
         }
-    }
-
-}
-
-
-
-
-
-void Screen::runGame()
-{
-
-    stack.setCurrentIndex(2);
-    // QFile gameFile("/home/student/wr0018/ChargerArcade/ChargerArcade/programs/CharmStudies.sh");
-    QFile gameFile(localpath + programs[spot]);
-     qDebug() << "running" << programs[spot];
-    if (!gameFile.exists()) {
-        qDebug() << "File does not exist!";
-    }
-
-    //QString program = "/home/student/wr0018/ChargerArcade/ChargerArcade/programs/CharmStudies.sh";
-    QString program = localpath + programs[spot];
-    connect(game, &QProcess::errorOccurred, this, [=](QProcess::ProcessError error) {
-        qDebug() << "Process error:" << error;
-    });
-    connect(game, &QProcess::started, this, [=](){
-        qDebug() << "started successully";
-    });
-    connect(game, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), this, [=](int exitCode, QProcess::ExitStatus exitStatus) {
-        if (exitStatus == QProcess::NormalExit) {
-            qDebug() << "Process ended successfully with exit code:" << exitCode;
-        } else {
-            qDebug() << "Process crashed with exit code:" << exitCode;
-        }
-    });
-
-    QStringList arguments;
-    arguments << "--window-width" << "1000" << "--window-height" << "1000"; // Example window size arguments
-    game->start(program);
-    makeAHKFile(spot+1);
-}
-
-void Screen::resizeWindowWithAHK(const QString &windowTitle, int width, int height) //incomplete
-{
-    if(AHKActive)
-    {
-    QString program = localpath + "AutoHotkey.exe";
-    QString scriptPath = ":/ChargerArcade.ahk";
-
-    QStringList arguments;
-    arguments << scriptPath
-              << windowTitle
-              << QString::number(width)
-              << QString::number(height);
-
-    QProcess *process = new QProcess(this);
-    connect(process, &QProcess::errorOccurred, [](QProcess::ProcessError error) {
-        qDebug() << "Error starting AutoHotKey script:" << error;
-    });
-
-    connect(process, &QProcess::finished, [](int exitCode, QProcess::ExitStatus status) {
-        if (status == QProcess::NormalExit)
-            qDebug() << "AHK script finished with code:" << exitCode;
         else
-            qDebug() << "AHK script crashed!";
+            qDebug() << qPrintable(Sign) << qPrintable("}") << qPrintable(QString::number(i+1));
+    }
+}
+
+bool Screen::connectToPeer(int id)
+{
+    const QString ip = addresses[id];
+    QStringList address = ip.split(":");
+    QTcpSocket *socket = peerSockets[id]/*new QTcpSocket(this)*/;
+
+    socket->connectToHost(address[0], address[1].toInt());
+    socket->write(QString::number(ID-1).toUtf8());
+
+    return socket->waitForConnected(2000);
+
+}
+
+
+
+
+void Screen::handleServerConnection() // Handles new incoming connections
+{
+    QTcpSocket *newClient = server->nextPendingConnection();
+    connect(newClient, &QTcpSocket::readyRead, this, [this, newClient]() {handleClientMessage(newClient, -1);});
+
+
+
+
+
+    /*QString add = newClient->peerAddress().toString()+":"+QString::number(newClient->peerPort());
+    add.replace("::ffff:","");
+    /*for(int i=0; i < TerminalCount; i++)
+    {
+        if(addresses[i] == add)
+        {
+            qDebug() << " FOUND ID";
+            id=i;
+        }
+        else
+        {
+            qDebug() << addresses[i] << " is not " << add;
+        }
+    }*/
+
+}
+
+
+void Screen::handleClientMessage(QTcpSocket *client, int id) // Reads messages from connected peers
+{
+    //QTcpSocket *client = qobject_cast<QTcpSocket*>(sender());
+if (!client) return;
+    QString ip = client->peerAddress().toString();
+    QByteArray dataa = client->readAll();
+    QString data = dataa;
+    data.split("=:=");
+    QString act=data[0];
+    QString comm=data[1];
+    if(id < 0)
+    {
+        disconnect(client);
+        id = std::atoi(dataa);
+        //qDebug() << Sign << qPrintable("id is " + QString::number(id) + " from string " + data);
+        registerConnection(id, client);
+        QString ip = client->peerAddress().toString();
+        ip = ip.replace("::ffff:", "");
+        //QString a = ip+":"+QString::number(newClient->peerPort());
+        //qDebug() << qPrintable(Sign) << qPrintable("<") << qPrintable(a);
+        qDebug() << " " << qPrintable(Sign) << qPrintable("<") << qPrintable(QString::number(id+1));
+    }
+    if(act == "startGame")
+    {
+
+    }
+    else
+        qDebug() << qPrintable(Sign) << qPrintable("-") << qPrintable(QString::number(id)) << qPrintable(""+data);
+    //client->write("Message received");
+}
+
+
+void Screen::SetUpServer() // Initializes the server and starts listening for connections
+{
+    QString ip = addresses[ID-1];
+    QStringList address = ip.split(":");
+    int port = address[1].toInt();
+    server = new QTcpServer(this);
+    connect(server, &QTcpServer::newConnection, this, &Screen::handleServerConnection);
+    server->listen(QHostAddress::Any, port);
+    qDebug() << qPrintable(Sign) << qPrintable("Server started");
+}
+
+
+void Screen::registerConnection(int id, QTcpSocket* zokket)
+{
+    if(zokket != peerSockets[id])
+    {
+        delete peerSockets[id];
+        peerSockets[id] = zokket;
+    }
+    if(DoStatus)
+    {
+        StatusIcons[id]->hide();
+        bar.removeWidget(StatusIcons[id]);
+    }
+
+    connect(zokket, &QTcpSocket::readyRead, this, [this, zokket, id]() {handleClientMessage(zokket, id);});
+    connect(zokket, &QTcpSocket::disconnected, this, [this, zokket, id]() {
+        handleDisconnect(zokket, id);
     });
 
-    process->start(program, arguments);
+
+
+    int spot=-1;
+    spot = disconnectedPeers.indexOf(id);
+    if(spot!=-1)
+    {
+    disconnectedPeers.remove(spot);
+    if(disconnectedPeers.size()==0)
+        reconnectTimer.stop();
     }
+    connections[id] = true;
+    //qDebug() << "New connection made to " << addresses[id] << ":" << ports[id];
 }
 
-void Screen::sendToAHK(const QString &key)
+
+
+
+/*int findIndexOfString(const QVector<QString>& vec, const QString& target) {
+    // Use std::find to search for the target string in the QVector
+    auto it = std::find(vec.begin(), vec.end(), target);
+
+    // If found, return the index; otherwise, return -1 to indicate not found
+    if (it != vec.end()) {
+        return std::distance(vec.begin(), it);  // Calculate index from iterator
+    }
+
+    return -1;  // Return -1 if the string is not found
+}*/
+
+
+void Screen::handleDisconnect(QTcpSocket *zokket, int id)
 {
-    if(AHKActive)
+    //QString ip = (zokket->peerAddress().toString())+":"+QString::number(zokket->peerPort());
+    //ip = ip.replace("::ffff:", "");
+    //qDebug() << "disconnected address is " << ip;
+    //int id = findIndexOfString(addresses, ip);
+    qDebug() << qPrintable(Sign) << qPrintable("X ") << qPrintable(QString::number(id));
+    if(DoStatus)
     {
-    QString message = "A";
-    QByteArray data = message.toUtf8();
-    data.append('\0'); // Add null terminator
-    ahksock.write(data); // Send input to AHK
-    ahksock.flush();
-    /*
-    QStringList arguments;
-    arguments << "C:/Users/wesri/Documents/AutoHotkey/ChargerArcadeControls.ahk" << key;
-    QProcess::startDetached("AutoHotKey.exe", arguments);*/
+        StatusIcons[id]->show();
+        bar.addWidget(StatusIcons[id]);
+        bar.setAlignment(StatusIcons[id],Qt::AlignLeft);
+    }
+    connections[id] = false;
+
+    if(id > ID-1)
+    {
+        disconnectedPeers.append(id);
+        if(disconnectedPeers.size()==1)
+            reconnectTimer.start();
     }
 }
 
-void Screen::makeAHKFile(int programid)
+
+
+
+
+
+void Screen::Reconnect()
 {
-    if(AHKActive)
+    for(int id:disconnectedPeers)
     {
-        QStringList datas = {"Up=w,Down=s,Left=a,Right=d,w=Enter,a=e","Up=Up","Left=Up,w=Space,a=d"}; //reformat later
-        QString data = datas[programid];
-        qDebug() << "setting controls to " << data;
-    //data = data.toLower();
-    QStringList dataa=data.split(",");
-
-    QFile ahk(localpath +"ahkfile.ahk");
-    QTextStream stream(&ahk);
-    ahk.open(QIODevice::WriteOnly|QIODevice::Text);
-    stream << "#Requires AutoHotkey v2.0\n#SingleInstance Force\nesc::ExitApp";
-
-
-
-    for(int i=0; i < dataa.length(); i++)
-    {
-        QStringList dataaa = dataa[i].split("=");
-        stream << "\n" << dataaa[0] << "::" << dataaa[1]<<"\n";
-        //stream << "\n" << dataaa[0] << "::\n{\nSend (\"" << dataaa[1]<<"\")\n}\n";
-        //con(dataa[1])=dataa[2];
-    }
-    ahk.close();
-
-    // Start the AHK script
-    QString localpathbackslash = localpath;
-    localpathbackslash.replace("/", "\\\\");
-    bool success = QProcess::startDetached(localpath+"AutoHotkey.exe", QStringList() << localpathbackslash+"ahkfile.ahk");
-
-    if (success)
-        qDebug() << "AHK script executed successfully.";
-
-    else
-    {
-        qDebug() << "Failed to execute AHK script.";
-        AHKActive=false;
-    }
+        qDebug() << "reconnecting to " << id;
+        connectToPeer(id);
     }
 }
 
-void Screen::endScript()
+
+
+
+
+
+
+
+
+
+
+
+
+
+void Screen::sendMessage(const QString &message, int id)
 {
-    if(AHKActive)
+    QTcpSocket* socket = peerSockets[id];
+    if (connections[id])
     {
-    QFile ahk(localpath + "ahkfile.ahk");
-    QTextStream stream(&ahk);
-    ahk.open(QIODevice::WriteOnly|QIODevice::Text);
-     stream << "#SingleInstance Force\nExitApp";
-    ahk.close();
-    QString localpathbackslash = localpath;
-    localpathbackslash.replace("/", "\\\\");
-    QProcess::startDetached(localpath+"AutoHotkey.exe", QStringList() << localpathbackslash+"ahkfile.ahk");
+        socket->write("8");
+        socket->flush();
+        qDebug() << qPrintable(Sign) << qPrintable("Sent message:") << message << qPrintable("to "+QString::number(id));
     }
+   // else
+        //qDebug() << "Error: Not connected to the selected peer.";
 }
 
+// Sends a message to all connected peers
+void Screen::broadcastMessage(const QString &message)
+{
+    for (int i=0; i < TerminalCount-1; i++)
+        sendMessage(message, IdReference[i]);
+}
+
+void Screen::Connect()
+{
+    if(ID != TerminalCount)
+        ConnectToPeers();
+}
+
+void Screen::DisconnectAll()
+{
+    for(int i=0; i < TerminalCount; i++)
+        delete(peerSockets[i]);
+    delete(server);
+}

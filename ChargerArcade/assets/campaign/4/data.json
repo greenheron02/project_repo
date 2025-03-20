@@ -1,0 +1,25 @@
+{
+  "name": "Chappy",
+  "bots": [
+    {
+      "accuracy" : 0.6,
+      "chanceToShoot" : 0.6,
+      "aggression" : 10,
+      "carrySpeed" : 400,
+      "flySpeed" : 700,
+      "thrustPower" : 6000,
+      "angularSpeed" : 8000,
+      "maxTackleSpeed" : 1500,
+      "attack" : 1,
+      "defense" : 1,
+      "special" : "boost",
+      "birdGraphic" : "chappy.png",
+      "legGraphic" : "chappyLeg.png"
+    }
+  ],
+  "trainingDialogue": [
+    "Don't get cocky now",
+    "This next bird ain't no dodo",
+    "C'mon keep those wings up"
+  ]
+}
