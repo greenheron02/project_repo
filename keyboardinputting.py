@@ -2,6 +2,8 @@
 # http://stackoverflow.com/questions/13564851/generate-keyboard-events
 # msdn.microsoft.com/en-us/library/dd375731
 
+
+
 import ctypes
 from ctypes import wintypes
 import time
@@ -21,6 +23,8 @@ MAPVK_VK_TO_VSC = 0
 
 # List of all codes for keys:
 # # msdn.microsoft.com/en-us/library/dd375731
+# This is a utility list of keycodes for translation
+# from string to keycode in the p2p2p2p.py script
 LEFT = 0x25
 UP = 0x26
 RIGHT = 0x27

@@ -60,15 +60,7 @@ def get_ports():
     return serial.tools.list_ports.comports()
 
 
-# if __name__ == '__main__':
-#     device_path = 0
-#     print(serial_ports())
-#     ports = serial.tools.list_ports.comports() 
-#     # serial_ports_info(ports) 
-#     device_path = find_pico(ports)
-            
-#     with serial.Serial(device_path) as ser: 
-#         print(ser)
+
     
     
 
